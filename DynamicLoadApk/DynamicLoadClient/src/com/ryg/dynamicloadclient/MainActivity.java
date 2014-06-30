@@ -1,5 +1,7 @@
 package com.ryg.dynamicloadclient;
 
+import com.dynamic.IRemoteView;
+
 import android.os.Bundle;
 import android.content.Context;
 import android.content.Intent;
@@ -13,7 +15,7 @@ import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.Toast;
 
-public class MainActivity extends BaseActivity {
+public class MainActivity extends BaseActivity implements IRemoteView {
 
     private static final String TAG = "Client-MainActivity";
 
@@ -61,6 +63,11 @@ public class MainActivity extends BaseActivity {
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.main, menu);
         return true;
+    }
+
+    @Override
+    public void introduce() {
+        Log.i(TAG, "I'm a remote view!");
     }
 
 }

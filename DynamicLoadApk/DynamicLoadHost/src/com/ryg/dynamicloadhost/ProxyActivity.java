@@ -5,7 +5,8 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.util.HashMap;
 
-import dalvik.system.DexClassLoader;
+import com.dynamic.IRemoteView;
+
 import android.annotation.TargetApi;
 import android.app.Activity;
 import android.content.Context;
@@ -17,6 +18,7 @@ import android.content.res.Resources.Theme;
 import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
+import dalvik.system.DexClassLoader;
 
 public class ProxyActivity extends Activity {
 
@@ -87,7 +89,7 @@ public class ProxyActivity extends Activity {
         Log.d(TAG, "start launchTargetActivity, className=" + className);
         File dexOutputDir = this.getDir("dex", Context.MODE_PRIVATE);
         final String dexOutputPath = dexOutputDir.getAbsolutePath();
-        ClassLoader localClassLoader = ClassLoader.getSystemClassLoader();
+        ClassLoader localClassLoader = getClassLoader();
         DexClassLoader dexClassLoader = new DexClassLoader(mDexPath,
                 dexOutputPath, null, localClassLoader);
         mClassLoader = dexClassLoader;
@@ -95,6 +97,8 @@ public class ProxyActivity extends Activity {
             Class<?> localClass = dexClassLoader.loadClass(className);
             Constructor<?> localConstructor = localClass.getConstructor(new Class[] {});
             Object instance = localConstructor.newInstance(new Object[] {});
+            IRemoteView view = (IRemoteView) instance;
+            view.introduce();
             setRemoteActivity(instance);
             Log.d(TAG, "instance = " + instance);
             instantiateLifecircleMethods(localClass);
@@ -124,7 +128,7 @@ public class ProxyActivity extends Activity {
         for (String methodName : methodNames) {
             Method method = null;
             try {
-                method = localClass.getDeclaredMethod(methodName, new Class[] { });
+                method = localClass.getMethod(methodName);
                 method.setAccessible(true);
             } catch (NoSuchMethodException e) {
                 e.printStackTrace();
