@@ -1,5 +1,7 @@
 package com.ryg.dynamicloadclient;
 
+import com.dynamic.IRemoteView;
+
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -9,7 +11,7 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.Toast;
 
-public class TestActivity extends BaseActivity {
+public class TestActivity extends BaseActivity implements IRemoteView {
 
     private static final String TAG = "TestActivity";
 
@@ -51,6 +53,11 @@ public class TestActivity extends BaseActivity {
         if (mFrom == FROM_INTERNAL) { 
             super.onPause();
         }
+    }
+
+    @Override
+    public void introduce() {
+        
     }
 
 }
