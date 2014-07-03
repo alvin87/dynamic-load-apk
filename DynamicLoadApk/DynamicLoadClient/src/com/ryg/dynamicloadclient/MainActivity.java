@@ -1,11 +1,9 @@
 package com.ryg.dynamicloadclient;
 
-import com.dynamic.IRemoteView;
-
-import android.os.Bundle;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
+import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
 import android.view.View;
@@ -15,12 +13,12 @@ import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.Toast;
 
-public class MainActivity extends BaseActivity implements IRemoteView {
+public class MainActivity extends BaseActivity {
 
     private static final String TAG = "Client-MainActivity";
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         initView(savedInstanceState);
     }
@@ -50,7 +48,7 @@ public class MainActivity extends BaseActivity implements IRemoteView {
     }
 
     @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
         Log.d(TAG, "onActivityResult resultCode=" + resultCode);
         if (resultCode == RESULT_FIRST_USER) {
             that.finish();
@@ -64,10 +62,4 @@ public class MainActivity extends BaseActivity implements IRemoteView {
         getMenuInflater().inflate(R.menu.main, menu);
         return true;
     }
-
-    @Override
-    public void introduce() {
-        Log.i(TAG, "I'm a remote view!");
-    }
-
 }

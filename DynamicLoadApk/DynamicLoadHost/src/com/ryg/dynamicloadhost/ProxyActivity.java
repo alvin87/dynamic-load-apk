@@ -3,9 +3,6 @@ package com.ryg.dynamicloadhost;
 import java.io.File;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
-import java.util.HashMap;
-
-import com.dynamic.IRemoteView;
 
 import android.annotation.TargetApi;
 import android.app.Activity;
@@ -18,6 +15,9 @@ import android.content.res.Resources.Theme;
 import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
+
+import com.dynamic.IRemoteActivity;
+
 import dalvik.system.DexClassLoader;
 
 public class ProxyActivity extends Activity {
@@ -39,8 +39,7 @@ public class ProxyActivity extends Activity {
     private Theme mTheme;
     private ClassLoader mClassLoader;
 
-    private Activity mRemoteActivity;
-    private HashMap<String, Method> mActivityLifecircleMethods = new HashMap<String, Method>();
+    private IRemoteActivity mRemoteActivity;
 
     protected void loadResources() {
         try {
@@ -97,68 +96,23 @@ public class ProxyActivity extends Activity {
             Class<?> localClass = dexClassLoader.loadClass(className);
             Constructor<?> localConstructor = localClass.getConstructor(new Class[] {});
             Object instance = localConstructor.newInstance(new Object[] {});
-            IRemoteView view = (IRemoteView) instance;
-            view.introduce();
             setRemoteActivity(instance);
             Log.d(TAG, "instance = " + instance);
-            instantiateLifecircleMethods(localClass);
 
-            Method setProxy = localClass.getMethod("setProxy", new Class[] { Activity.class, String.class });
-            setProxy.setAccessible(true);
-            setProxy.invoke(instance, new Object[] { this, mDexPath });
+            mRemoteActivity.setProxy(this, mDexPath);
 
-            Method onCreate = mActivityLifecircleMethods.get("onCreate");
             Bundle bundle = new Bundle();
             bundle.putInt(FROM, FROM_EXTERNAL);
-            onCreate.invoke(instance, new Object[] { bundle });
+            mRemoteActivity.onCreate(bundle);
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
-    protected void instantiateLifecircleMethods(Class<?> localClass) {
-        String[] methodNames = new String[] {
-                "onRestart",
-                "onStart",
-                "onResume",
-                "onPause",
-                "onStop",
-                "onDestory"
-        };
-        for (String methodName : methodNames) {
-            Method method = null;
-            try {
-                method = localClass.getMethod(methodName);
-                method.setAccessible(true);
-            } catch (NoSuchMethodException e) {
-                e.printStackTrace();
-            }
-            mActivityLifecircleMethods.put(methodName, method);
-        }
-
-        Method onCreate = null;
-        try {
-            onCreate = localClass.getDeclaredMethod("onCreate", new Class[] { Bundle.class });
-            onCreate.setAccessible(true);
-        } catch (NoSuchMethodException e) {
-            e.printStackTrace();
-        }
-        mActivityLifecircleMethods.put("onCreate", onCreate);
-
-        Method onActivityResult = null;
-        try {
-            onActivityResult = localClass.getDeclaredMethod("onActivityResult",
-                    new Class[] { int.class, int.class, Intent.class });
-            onActivityResult.setAccessible(true);
-        } catch (NoSuchMethodException e) {
-            e.printStackTrace();
-        }
-        mActivityLifecircleMethods.put("onActivityResult", onActivityResult);
-    }
 
     protected void setRemoteActivity(Object activity) {
         try {
-            mRemoteActivity = (Activity) activity;
+            mRemoteActivity = (IRemoteActivity) activity;
         } catch (ClassCastException e) {
             e.printStackTrace();
         }
@@ -204,92 +158,42 @@ public class ProxyActivity extends Activity {
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        Log.d(TAG, "onActivityResult resultCode=" + resultCode);
-        Method onActivityResult = mActivityLifecircleMethods.get("onActivityResult");
-        if (onActivityResult != null) {
-            try {
-                onActivityResult.invoke(mRemoteActivity, new Object[] { requestCode, resultCode, data });
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        }
+        mRemoteActivity.onActivityResult(requestCode, resultCode, data);
         super.onActivityResult(requestCode, resultCode, data);
     }
 
     @Override
     protected void onStart() {
+        mRemoteActivity.onStart();
         super.onStart();
-        Method onStart = mActivityLifecircleMethods.get("onStart");
-        if (onStart != null) {
-            try {
-                onStart.invoke(mRemoteActivity, new Object[] {});
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        }
     }
     
     @Override
     protected void onRestart() {
+        mRemoteActivity.onRestart();
         super.onRestart();
-        Method onRestart = mActivityLifecircleMethods.get("onRestart");
-        if (onRestart != null) {
-            try {
-                onRestart.invoke(mRemoteActivity, new Object[] { });
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        }
     }
     @Override
     protected void onResume() {
+        mRemoteActivity.onResume();
         super.onResume();
-        Method onResume = mActivityLifecircleMethods.get("onResume");
-        if (onResume != null) {
-            try {
-                onResume.invoke(mRemoteActivity, new Object[] { });
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        }
     }
     
     @Override
     protected void onPause() {
-        Method onPause = mActivityLifecircleMethods.get("onPause");
-        if (onPause != null) {
-            try {
-                onPause.invoke(mRemoteActivity, new Object[] { });
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        }
+        mRemoteActivity.onPause();
         super.onPause();
     }
 
     @Override
     protected void onStop() {
-        Method onStop = mActivityLifecircleMethods.get("onStop");
-        if (onStop != null) {
-            try {
-                onStop.invoke(mRemoteActivity, new Object[] { });
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        }
+        mRemoteActivity.onStop();
         super.onStop();
     }
     
     @Override
     protected void onDestroy() {
-        Method onDestroy = mActivityLifecircleMethods.get("onDestroy");
-        if (onDestroy != null) {
-            try {
-                onDestroy.invoke(mRemoteActivity, new Object[] { });
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        }
+        mRemoteActivity.onDestroy();
         super.onDestroy();
     }
 

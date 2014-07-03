@@ -1,7 +1,5 @@
 package com.ryg.dynamicloadclient;
 
-import com.dynamic.IRemoteView;
-
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -11,14 +9,14 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.Toast;
 
-public class TestActivity extends BaseActivity implements IRemoteView {
+public class TestActivity extends BaseActivity {
 
     private static final String TAG = "TestActivity";
 
     private EditText mEditText;
     private ImageView mImageView;
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
         setContentView(R.layout.test);
@@ -38,7 +36,7 @@ public class TestActivity extends BaseActivity implements IRemoteView {
     }
 
     @Override
-    protected void onResume() {
+    public void onResume() {
         if (mFrom == FROM_INTERNAL) { 
             super.onResume();
         }
@@ -48,16 +46,11 @@ public class TestActivity extends BaseActivity implements IRemoteView {
     }
     
     @Override
-    protected void onPause() {
+    public void onPause() {
         Log.d(TAG, "onPause");
         if (mFrom == FROM_INTERNAL) { 
             super.onPause();
         }
-    }
-
-    @Override
-    public void introduce() {
-        
     }
 
 }
